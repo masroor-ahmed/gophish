@@ -30,15 +30,14 @@ COPY --from=build-golang /go/src/github.com/gophish/gophish/ ./
 COPY --from=build-js /build/static/js/dist/ ./static/js/dist/
 COPY --from=build-js /build/static/css/dist/ ./static/css/dist/
 COPY --from=build-golang /go/src/github.com/gophish/gophish/config.json ./
+COPY ./run.sh ./docker/
+
 RUN chown app. config.json
+RUN chmod +x ./docker/run.sh
 
 RUN setcap 'cap_net_bind_service=+ep' /opt/gophish/gophish
 
 USER app
-
-# Adjust config.json to use PORT environment variable
-RUN jq --arg port "$PORT" '.phish_server.listen_url = "0.0.0.0:" + $port' config.json > config.json.tmp && mv config.json.tmp config.json
-RUN touch config.json.tmp
 
 EXPOSE $PORT
 
