@@ -35,9 +35,11 @@ RUN chown app. config.json
 RUN setcap 'cap_net_bind_service=+ep' /opt/gophish/gophish
 
 USER app
-RUN sed -i 's/127.0.0.1/0.0.0.0/g' config.json
+
+# Adjust config.json to use PORT environment variable
+RUN jq --arg port "$PORT" '.phish_server.listen_url = "0.0.0.0:" + $port' config.json > config.json.tmp && mv config.json.tmp config.json
 RUN touch config.json.tmp
 
-EXPOSE 3333 8080 8443 80
+EXPOSE $PORT
 
 CMD ["./docker/run.sh"]
